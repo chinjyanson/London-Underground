@@ -1,0 +1,17 @@
+{
+    "stations": {
+        "speed":{
+            "Circle" :  23.1,
+            "District": 29.1,
+            "Bakerloo": 27.0,
+            "Jubilee": 39.1,
+            "Metropolitan": 45.6,
+            "Hammersmith & City": 25.3,
+            "Northern": 33.3,
+            "Victoria": 40.7,
+            "Waterloo & City": 33.3,  
+            "Piccadilly": 33.11,
+            "Central": 37.3
+        }
+    }
+} 
