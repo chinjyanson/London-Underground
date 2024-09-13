@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import TrainMap from './components/TrainMap';
-import LocationTextBox from './components/LocationTextBox';
-import SlidingUpModal from './components/SlidingUpModal';
+import TrainMap from './src/components/TrainMap';
+import LocationTextBox from './src/components/LocationTextBox';
+import SlidingUpModal from './src/components/SlidingUpModal';
 // import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const ParentComponent = () => {
