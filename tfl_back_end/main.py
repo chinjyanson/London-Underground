@@ -63,6 +63,7 @@ all_stations = list(set(stations_dict.values()))
 # entering the location name
 start_address = input("Please enter your location address: ")
 getLoc = func.nametocoordinates(start_address)
+print(getLoc)
 start_coordinate = func.get_nearest_coordinate(getLoc[0], getLoc[1])
 start = stations_dict[func.get_nearest_station(start_coordinate)]
 
