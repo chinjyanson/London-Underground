@@ -1,117 +1,86 @@
-import React, { useRef, useState, useEffect, forwardRef } from 'react';
-import { View, Text, StyleSheet, Modal, Animated, PanResponder, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, PanResponder } from 'react-native';
 
-// Get the device height to dynamically control the modal's height
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const SlidingUpModal = forwardRef((props, ref) => {
-  const [visible, setVisible] = useState(false);
-  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT / 2)).current; // Start halfway up
+const SlidingModal = () => {
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current; // Start off-screen
+  const lastTranslateY = useRef(SCREEN_HEIGHT); // Keep track of last position with a ref
+  const [modalPosition, setModalPosition] = useState('closed'); // closed, half, full
 
-  // PanResponder for controlling the modal (swipe up to expand, swipe down to close)
-  const panResponderForModal = useRef(
+  useEffect(() => {
+    modalPosition === 'closed' && snapToPosition('closed');
+  });
+
+  // Define the snap points for the modal
+  const SNAP_POINTS = {
+    closed: SCREEN_HEIGHT - 100,
+    half: SCREEN_HEIGHT / 2,
+    full: 160,
+  };
+
+  // Function to smoothly snap to the nearest modal position
+  const snapToPosition = (position) => {
+    setModalPosition(position);
+    Animated.spring(translateY, {
+      toValue: SNAP_POINTS[position], // Snap to the specified position
+      useNativeDriver: true,
+      friction: 8, // Adjust for a smoother spring animation
+    }).start(() => {
+      lastTranslateY.current = SNAP_POINTS[position]; // Update lastTranslateY after animation
+    });
+  };
+
+  // PanResponder for controlling the modal (dragging it)
+  const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        translateY.setValue(Math.max(gesture.dy + SCREEN_HEIGHT / 2, 0)); // Limit dragging upward
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (event, gestureState) => {
+        // Calculate the new translateY dynamically based on gesture movement
+        const newTranslateY = Math.max(lastTranslateY.current + gestureState.dy, 0);
+        translateY.setValue(newTranslateY);
       },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dy > SCREEN_HEIGHT / 4) {
-          // If the modal is dragged down more than a quarter, close it
-          closeModal();
-        } else if (gesture.dy < -50) {
-          // If the modal is swiped up more than a certain threshold, fully expand it
-          Animated.spring(translateY, {
-            toValue: 0, // Fully expanded (covers the entire screen)
-            useNativeDriver: true,
-          }).start();
+      onPanResponderRelease: (event, gestureState) => {
+        const newPosition = lastTranslateY.current + gestureState.dy;
+
+        // Calculate the difference between the current position and each snap point
+        const diffToClosed = Math.abs(newPosition - SNAP_POINTS.closed);
+        const diffToHalf = Math.abs(newPosition - SNAP_POINTS.half);
+        const diffToFull = Math.abs(newPosition - SNAP_POINTS.full);
+
+        // Snap to the closest position (closed, half, or full)
+        if (diffToClosed < diffToHalf && diffToClosed < diffToFull) {
+          snapToPosition('closed');
+        } else if (diffToHalf < diffToClosed && diffToHalf < diffToFull) {
+          snapToPosition('half');
         } else {
-          // Snap it back to the half-open state
-          Animated.spring(translateY, {
-            toValue: SCREEN_HEIGHT / 2, // Set it back to halfway up
-            useNativeDriver: true,
-          }).start();
+          snapToPosition('full');
         }
       },
     })
   ).current;
 
-  // Open modal in a partially visible state (halfway up)
-  const openModal = () => {
-    setVisible(true);
-    Animated.spring(translateY, {
-      toValue: SCREEN_HEIGHT / 2, // Initially show the modal halfway up
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // Close the modal fully
-  const closeModal = () => {
-    Animated.spring(translateY, {
-      toValue: SCREEN_HEIGHT, // Move it completely off-screen
-      useNativeDriver: true,
-    }).start(() => setVisible(false));
-  };
-
-  // Expose openModal to parent component via ref
-  useEffect(() => {
-    openModal(); // Automatically open modal when component mounts
-  }, []);
 
   return (
-    <Modal visible={visible} transparent animationType="none">
-      <View style={styles.modalOverlay}>
-        <Animated.View
-          style={[
-            styles.modal,
-            { height: SCREEN_HEIGHT, transform: [{ translateY }] }, // Dynamic height to cover full screen
-          ]}
-          {...panResponderForModal.panHandlers}
-        >
-          <View style={styles.modalHeader}>
-            <Text style={styles.closeText} onPress={closeModal}>
-              Close
-            </Text>
-          </View>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>This is a full-screen sliding up modal!</Text>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
+    <Animated.View
+      style={{
+        position: 'absolute',
+        width: '100%',
+        height: SCREEN_HEIGHT,
+        backgroundColor: 'white',
+        transform: [{ translateY }],
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+      }}
+      {...panResponder.panHandlers}
+    >
+      {/* Your modal content goes here */}
+    </Animated.View>
   );
-});
+};
 
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.5)', // Dark overlay behind the modal
-  },
-  modal: {
-    width: '100%',
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  closeText: {
-    fontSize: 18,
-    color: '#007BFF',
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalText: {
-    fontSize: 18,
-  },
-});
-
-export default SlidingUpModal;
+export default SlidingModal;

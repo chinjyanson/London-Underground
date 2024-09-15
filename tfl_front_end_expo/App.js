@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import TrainMap from './src/components/TrainMap';
-import LocationTextBox from './src/components/LocationTextBox';
+// import LocationTextBox from './src/components/LocationTextBox';
 import SlidingUpModal from './src/components/SlidingUpModal';
-// import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const ParentComponent = () => {
   const routeCoordinates = [
@@ -54,21 +53,14 @@ const ParentComponent = () => {
   ];
 
   return (
-    // <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <LocationTextBox 
-          location_placeholder={'Enter starting location'}
-        />
-        <LocationTextBox 
-          location_placeholder={'Enter destination'}
-        />
+        {/* <LocationTextBox /> */}
         <TrainMap 
           stations={stations}
           routeCoordinates={routeCoordinates}
         />
         <SlidingUpModal />
       </View>  
-    // </GestureHandlerRootView>
   );
 };
 
