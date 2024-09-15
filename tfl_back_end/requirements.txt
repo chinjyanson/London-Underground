@@ -2,3 +2,4 @@ Flask==3.0.3
 pyignite==0.6.1
 json
 jsonify==0.5
+flask-cors==5.0.0

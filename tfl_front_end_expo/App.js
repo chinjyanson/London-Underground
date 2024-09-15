@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import TrainMap from './src/components/TrainMap';
 // import LocationTextBox from './src/components/LocationTextBox';
 import SlidingUpModal from './src/components/SlidingUpModal';
 
 const ParentComponent = () => {
+  // useEffect(() => {
+
+  // });
   const routeCoordinates = [
     [51.519858, -0.167832],
     [51.516581, -0.175689],

@@ -4,11 +4,13 @@ from utils import name_to_coordinates, get_nearest_station
 from create_stations import create_stations
 from cache_client import station_cache
 import json
+from flask_cors import CORS
 
 
 # Flask constructor takes the name of 
 # current module (__name__) as argument.
 app = Flask("TFL_Back_End")
+CORS(app)  # Enable CORS for all routes
 
 # The route() function of the Flask class is a decorator, 
 # which tells the application which URL should call 
