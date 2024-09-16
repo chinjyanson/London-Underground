@@ -4,6 +4,7 @@ from create_stations import global_stations
 
 station_data = global_stations
 stations = json.loads(station_data)
+print(stations)
 
 # Adjusted velocities for different lines (in km/h)
 line_velocities = {
@@ -41,7 +42,11 @@ def haversine_distance(coord1, coord2):
 # Helper function to calculate travel time in minutes between two stations
 def travel_time(coord1, coord2, line):
     distance = haversine_distance(coord1, coord2)
-    velocity = line_velocities.get(line, 25)  # Default velocity if line not found
+    # print(line)
+    if line:
+        velocity = line_velocities.get(max(line), 25)  # Default velocity if line not found
+    else:
+        velocity = 25
     time_in_hours = distance / velocity
     time_in_minutes = time_in_hours * 60
     # Add stop time and ensure minimum travel time
@@ -67,6 +72,8 @@ def a_star_search(start, goal):
             return reconstruct_path_json(came_from, current_station, goal)
 
         for neighbor_name, neighbor_info in stations[current_station]['neighbours'].items():
+            print(neighbor_info)
+            print(neighbor_info.get('line'), neighbor_info['line'])
             line = neighbor_info.get('line')
             tentative_g_score = g_score[current_station] + travel_time(
                 stations[current_station]['coordinates'], neighbor_info['coordinates'], line)

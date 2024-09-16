@@ -1,8 +1,18 @@
 // JourneyLog.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
 const JourneyLog = ({ timeTaken, journeyPath }) => {
+  const calculateETA = (travelTimeInMinutes) => {
+    const currentTime = new Date(); // Get current time
+    const etaTime = new Date(currentTime.getTime() + travelTimeInMinutes * 60000); // Add travel time in milliseconds
+  
+    const etaHours = etaTime.getHours();
+    const etaMinutes = etaTime.getMinutes();
+  
+    return `${etaHours}:${etaMinutes < 10 ? '0' : ''}${etaMinutes}`; // Return formatted ETA
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Journey Summary</Text>
@@ -10,22 +20,32 @@ const JourneyLog = ({ timeTaken, journeyPath }) => {
       {/* Time Taken */}
       <View style={styles.infoRow}>
         <Text style={styles.label}>Time Taken: </Text>
-        <Text style={styles.value}>{timeTaken}</Text>
+        <Text style={styles.value}>{timeTaken} minutes</Text>
+      </View>
+
+      {/* ETA */}
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>ETA: </Text>
+        <Text style={styles.value}>{calculateETA(timeTaken)}</Text>
       </View>
 
       {/* Journey Path */}
       <Text style={styles.subHeader}>Journey Path</Text>
-      <View style={styles.pathContainer}>
-        {journeyPath.map((stop, index) => (
-          <View key={index} style={styles.stopContainer}>
-            <Text style={styles.stopName}>{stop.station}</Text>
-            <Text style={styles.lineName}>{stop.line ? `Line: ${stop.line}` : 'No line info'}</Text>
-            <Text style={styles.coordinates}>
-              Coordinates: {stop.coordinates[0]}, {stop.coordinates[1]}
-            </Text>
-          </View>
-        ))}
-      </View>
+
+      {/* Scrollable Journey Path */}
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.pathContainer}>
+          {journeyPath.map((stop, index) => (
+            <View key={index} style={styles.stopContainer}>
+              <Text style={styles.stopName}>{stop.station}</Text>
+              <Text style={styles.lineName}>{stop.line ? `Line: ${stop.line}` : 'No line info'}</Text>
+              <Text style={styles.coordinates}>
+                Coordinates: {stop.coordinates[0]}, {stop.coordinates[1]}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -36,6 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     marginBottom: 20,
+    height: '80%', // Ensure the modal or container has enough space
   },
   header: {
     fontSize: 20,
@@ -62,8 +83,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  pathContainer: {
+  scrollView: {
+    maxHeight: 400, // Set a maximum height for the scrollable area
     marginTop: 10,
+  },
+  pathContainer: {
+    paddingBottom: 20,
   },
   stopContainer: {
     backgroundColor: '#f2f2f2',

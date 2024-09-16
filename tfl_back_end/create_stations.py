@@ -21,30 +21,44 @@ def get_stations_by_line(stations, line_id):
                 if station_name not in stations:
                     stations[station_name] = {
                         "name": station_name,
+                        "line": [line_id],
                         "coordinates": station_coords,
                         "neighbours": {}
                     }
+                else:
+                    # If the station already exists, update the line
+                    if line_id not in stations[station_name]["line"]:
+                        stations[station_name]["line"].append(line_id)
 
                 # Handle the previous neighbor (station before current station)
                 if i > 0:
                     prev_station = stop_points[i - 1]
                     prev_station_name = prev_station["name"]
-                    stations[station_name]["neighbours"][prev_station_name] = {
-                        "name": prev_station_name,
-                        "coordinates": (prev_station["lat"], prev_station["lon"]),
-                    }
+                    if prev_station_name not in stations[station_name]["neighbours"]:
+                        stations[station_name]["neighbours"][prev_station_name] = {
+                            "name": prev_station_name,
+                            "line": [line_id],  # Ensure this is a list
+                            "coordinates": (prev_station["lat"], prev_station["lon"]),
+                        }
+                    else:
+                        if line_id not in stations[station_name]["neighbours"][prev_station_name]["line"]:
+                            stations[station_name]["neighbours"][prev_station_name]["line"].append(line_id)
 
                 # Handle the next neighbor (station after current station)
                 if i < len(stop_points) - 1:
                     next_station = stop_points[i + 1]
                     next_station_name = next_station["name"]
-                    stations[station_name]["neighbours"][next_station_name] = {
-                        "name": next_station_name,
-                        "line": line_id,
-                        "coordinates": (next_station["lat"], next_station["lon"]),
-                    }
+                    if next_station_name not in stations[station_name]["neighbours"]:
+                        stations[station_name]["neighbours"][next_station_name] = {
+                            "name": next_station_name,
+                            "line": [line_id],  # Ensure this is a list
+                            "coordinates": (next_station["lat"], next_station["lon"]),
+                        }
+                    else:
+                        if line_id not in stations[station_name]["neighbours"][next_station_name]["line"]:
+                            stations[station_name]["neighbours"][next_station_name]["line"].append(line_id)
 
-        return stations
+    return stations
 
 # def naptan_name_pairs():
 #     # cache = naptan_cache.get("naptan_cache")
@@ -94,6 +108,10 @@ def create_stations():
 global_stations = create_stations()
 
 if __name__ == "__main__":
-    print(create_stations())
+    # stations={}
+    # print(get_stations_by_line(stations, "circle"))
+    # print("")
+    # print(get_stations_by_line(stations, "district"))
+    print(global_stations)
 # stations = {'Elephant & Castle Underground Station': {'name': 'Elephant & Castle Underground Station', 'coordinates': (51.494536, -0.100606), 'naptanID': None, 'neighbours': {}}}
 # print(get_stations_by_line(stations, "bakerloo"))
