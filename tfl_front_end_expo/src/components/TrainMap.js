@@ -47,7 +47,7 @@ const TrainMap = ({ pathData, setPathData }) => {
         padding: 0;
       }
       body, html { margin: 0; padding: 0; }
-
+  
       /* You can add extra styles here if needed */
     </style>
   </head>
@@ -56,12 +56,12 @@ const TrainMap = ({ pathData, setPathData }) => {
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
       const map = L.map('map').setView([51.505, -0.09], 13); // Default map view
-
+  
       // Add tile layer (OpenStreetMap)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
       }).addTo(map);
-
+  
       // Function to create a static pixel icon for stations
       function createStationIcon() {
         return L.icon({
@@ -71,7 +71,7 @@ const TrainMap = ({ pathData, setPathData }) => {
           popupAnchor: [0, -10]    // Offset the popup so it appears above the icon
         });
       }
-
+  
       // Add markers for the starting coordinates
       ${startingCoordinates ? `
         map.setView([${startingCoordinates.lat}, ${startingCoordinates.lng}], 13);
@@ -79,7 +79,7 @@ const TrainMap = ({ pathData, setPathData }) => {
         .addTo(map)
         .bindPopup('Starting Location: ${startingLocation}');
         
-        // Draw a dotted line from starting coordinates to the first station in pathData
+        // Draw a dotted line from starting coordinates to the first station in pathStations
         const firstStationCoordinates = ${pathStations}[0] ? ${pathStations}[0].coordinates : null;
         if (firstStationCoordinates) {
           L.polyline([
@@ -91,7 +91,7 @@ const TrainMap = ({ pathData, setPathData }) => {
           }).addTo(map);
         }
       ` : ''}
-
+  
       // Add the destination marker if destination coordinates are available
       ${destinationCoordinates ? `
         L.marker([${destinationCoordinates.lat}, ${destinationCoordinates.lng}])
@@ -110,12 +110,11 @@ const TrainMap = ({ pathData, setPathData }) => {
           }).addTo(map);
         }
       ` : ''}
-
-      // Add all station markers and connect them with a polyline
+  
+      // Add all station markers and connect them with individual polylines
       const stations = ${pathStations};
-      const routeCoordinates = [];
-      stations.forEach(station => {
-        const { coordinates, station: stationName, line } = station;
+      stations.forEach((station, index) => {
+        const { coordinates, station: stationName, line, color } = station;
         
         // Add marker with the static pixel icon
         const marker = L.marker(coordinates, {
@@ -124,21 +123,25 @@ const TrainMap = ({ pathData, setPathData }) => {
         
         // Add popup to each station marker
         marker.bindPopup(\`Station: \${stationName} <br> Line: \${line || 'N/A'}\`);
-
-        // Add to route coordinates for the polyline
-        routeCoordinates.push(coordinates);
+  
+        // Draw individual polylines for each segment between two consecutive stations
+        if (index > 0) {
+          const prevStation = stations[index - 1];
+          const prevCoordinates = prevStation.coordinates;
+          const segmentColor = station.color || 'black';  // Use the station color or default to black
+          
+          L.polyline([prevCoordinates, coordinates], {
+            color: segmentColor,
+            weight: 4,  // Adjust the weight (thickness) of the line
+            opacity: 0.8
+          }).addTo(map);
+        }
       });
-
-      // Draw polyline connecting the stations
-      L.polyline(routeCoordinates, { color: 'red' }).addTo(map);
     </script>
   </body>
   </html>
-`;
-
-
-
-
+  `;
+  
 
   return (
     <View style={styles.container}>
