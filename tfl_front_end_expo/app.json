@@ -22,10 +22,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "API_URL": "http://127.0.0.1:5000",
-      "GOOGLE_API_KEY": "AIzaSyBw-L4QP73nUwhTjyKD03hK5aMcw4x2-ro"
     }
   }
 }

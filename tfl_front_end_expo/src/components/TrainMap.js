@@ -4,6 +4,7 @@ import { WebView } from 'react-native-webview';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { find_optimal_path } from '../api/api';
 import Constants from 'expo-constants';
+import { GOOGLE_PLACES_API_KEY } from '@env';
 
 const TrainMap = ({ pathData, setPathData }) => {
   const [startingLocation, setStartingLocation] = useState('');
@@ -56,8 +57,8 @@ const TrainMap = ({ pathData, setPathData }) => {
           maxZoom: 19,
         }).addTo(map);
 
-        // L.Marker(${startingCoordinates}).addTo(map).bindPopup('Starting Location: ${startingLocation}');
-        // L.Marker(${destinationCoordinates}).addTo(map).bindPopup('Destination: ${destination}');
+        // L.Marker(${startingCoordinates.lng, startingCoordinates.lat}).addTo(map).bindPopup('Starting Location: ${startingLocation}');
+        // // L.Marker(${destinationCoordinates}).addTo(map).bindPopup('Destination: ${destination}');
 
         const stations = ${pathStations};
 
@@ -97,7 +98,7 @@ const TrainMap = ({ pathData, setPathData }) => {
             setStartingCoordinates({ lat: details.geometry.location.lat, lng: details.geometry.location.lng });
           }}
           query={{
-            key: Constants.expoConfig.extra.GOOGLE_API_KEY, // Replace with your Google API key
+            key: GOOGLE_PLACES_API_KEY, // Replace with your Google API key
             language: 'en',
           }}
           styles={{
@@ -112,7 +113,7 @@ const TrainMap = ({ pathData, setPathData }) => {
             setDestinationCoordinates({ lat: details.geometry.location.lat, lng: details.geometry.location.lng });
           }}
           query={{
-            key: Constants.expoConfig.extra.GOOGLE_API_KEY, // Replace with your Google API key
+            key: GOOGLE_PLACES_API_KEY, // Replace with your Google API key
             language: 'en',
           }}
           styles={{
