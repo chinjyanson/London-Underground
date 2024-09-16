@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, Button, Alert } from 'react-native';
+import { StyleSheet, View, Button, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { find_optimal_path } from '../api/api';
+import Constants from 'expo-constants';
 
-const TrainMap = () => {
+const TrainMap = ({ pathData, setPathData }) => {
   const [startingLocation, setStartingLocation] = useState('');
   const [destination, setDestination] = useState('');
-  const [pathData, setPathData] = useState(null); // Store path data returned from API
+  const [startingCoordinates, setStartingCoordinates] = useState('');
+  const [destinationCoordinates, setDestinationCoordinates] = useState('');
 
   const handleFindPath = async () => {
     if (!startingLocation || !destination) {
@@ -15,7 +18,8 @@ const TrainMap = () => {
     }
 
     try {
-      const data = await find_optimal_path(startingLocation, destination); // Call the API
+      const data = await find_optimal_path(startingCoordinates.lng, startingCoordinates.lat, destinationCoordinates.lng, destinationCoordinates.lat); // Call the API
+      console.log('API response:', data);
       setPathData(data); // Save the entire path data to state
     } catch (error) {
       Alert.alert('Error', 'Failed to find the path.');
@@ -47,34 +51,27 @@ const TrainMap = () => {
       <div id="map"></div>
       <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
       <script>
-        // Initialize the map
         const map = L.map('map').setView([51.505, -0.09], 13);
-        
-        // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
         }).addTo(map);
 
-        // Parse the stations data passed from React Native
+        // L.Marker(${startingCoordinates}).addTo(map).bindPopup('Starting Location: ${startingLocation}');
+        // L.Marker(${destinationCoordinates}).addTo(map).bindPopup('Destination: ${destination}');
+
         const stations = ${pathStations};
 
-        // Loop over the stations and add them to the map
         stations.forEach(station => {
           const { coordinates, station: stationName, line } = station;
-          
-          // Create a marker for each station
           const marker = L.circleMarker(coordinates, {
             radius: 8,
-            color: line ? 'blue' : 'green', // Color based on the line availability
+            color: line ? 'blue' : 'green',
             fillColor: '#f03',
             fillOpacity: 0.7,
           }).addTo(map);
-
-          // Bind a popup with station name and line information
           marker.bindPopup(\`Station: \${stationName} <br> Line: \${line || 'N/A'}\`);
         });
 
-        // Draw a polyline between all stations to show the route
         const routeCoordinates = stations.map(station => station.coordinates);
         L.polyline(routeCoordinates, { color: 'red' }).addTo(map);
       </script>
@@ -86,28 +83,41 @@ const TrainMap = () => {
     <View style={styles.container}>
       {/* WebView displaying the map */}
       <View style={styles.webViewContainer}>
-        <WebView
-          originWhitelist={['*']}
-          source={{ html }}
-          style={styles.webView}
-        />
+        <WebView originWhitelist={['*']} source={{ html }} style={styles.webView} />
       </View>
 
       {/* Input for Starting Location and Destination */}
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
+        <GooglePlacesAutocomplete
           placeholder="Enter Starting Location"
-          placeholderTextColor="#888"
-          value={startingLocation}
-          onChangeText={text => setStartingLocation(text)}
+          fetchDetails={true}
+          onPress={(data, details = null) => {
+            setStartingLocation(details.formatted_address);
+            console.log('Starting Location:', details.geometry.location);
+            setStartingCoordinates({ lat: details.geometry.location.lat, lng: details.geometry.location.lng });
+          }}
+          query={{
+            key: Constants.expoConfig.extra.GOOGLE_API_KEY, // Replace with your Google API key
+            language: 'en',
+          }}
+          styles={{
+            textInput: styles.input,
+          }}
         />
-        <TextInput
-          style={styles.input}
+        <GooglePlacesAutocomplete
           placeholder="Enter Destination"
-          placeholderTextColor="#888"
-          value={destination}
-          onChangeText={text => setDestination(text)}
+          fetchDetails={true}
+          onPress={(data, details = null) => {
+            setDestination(details.formatted_address);
+            setDestinationCoordinates({ lat: details.geometry.location.lat, lng: details.geometry.location.lng });
+          }}
+          query={{
+            key: Constants.expoConfig.extra.GOOGLE_API_KEY, // Replace with your Google API key
+            language: 'en',
+          }}
+          styles={{
+            textInput: styles.input,
+          }}
         />
         <Button title="Find Path" onPress={handleFindPath} />
       </View>

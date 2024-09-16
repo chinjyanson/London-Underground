@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, PanResponder } from 'react-native';
+import { Animated, Dimensions, PanResponder, StyleSheet, View, Text } from 'react-native';
+import JourneyLog from './ModalContent'; // Import your JourneyLog component
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const SlidingModal = () => {
+const SlidingModal = ({ pathData }) => {
+  console.log(pathData);
+  const timeTaken = pathData.total_time_in_minutes;
+  const JourneyPath = pathData.path;
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current; // Start off-screen
   const lastTranslateY = useRef(SCREEN_HEIGHT); // Keep track of last position with a ref
   const [modalPosition, setModalPosition] = useState('closed'); // closed, half, full
@@ -14,9 +18,9 @@ const SlidingModal = () => {
 
   // Define the snap points for the modal
   const SNAP_POINTS = {
-    closed: SCREEN_HEIGHT - 100,
+    closed: SCREEN_HEIGHT - 50,
     half: SCREEN_HEIGHT / 2,
-    full: 160,
+    full: 200,
   };
 
   // Function to smoothly snap to the nearest modal position
@@ -78,9 +82,40 @@ const SlidingModal = () => {
       }}
       {...panResponder.panHandlers}
     >
-      {/* Your modal content goes here */}
+      {/* Modal Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Journey Details</Text>
+      </View>
+
+      {/* Journey Log */}
+      <JourneyLog timeTaken={timeTaken} journeyPath={JourneyPath} />
     </Animated.View>
   );
 };
+
+const styles = StyleSheet.create({
+  modal: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%', // Make it cover the screen
+    backgroundColor: 'white',
+    // transform: [{ translateY }],
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    padding: 20,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+});
 
 export default SlidingModal;

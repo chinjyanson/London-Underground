@@ -18,22 +18,30 @@ CORS(app)  # Enable CORS for all routes
 @app.route('/find_optimal_path', methods=['GET'])
 def find_optimal_path():
     # Get 'start' and 'end' from query parameters
-    start = request.args.get('start')
-    end = request.args.get('end')
+    start_lng = request.args.get('start_lng')
+    start_lat = request.args.get('start_lat')
+    end_lng = request.args.get('end_lng')
+    end_lat = request.args.get('end_lat')
+
+    start_lng = float(start_lng)
+    start_lat = float(start_lat)
+    end_lng = float(end_lng)
+    end_lat = float(end_lat)
     
-    if not start or not end:
+    if not start_lng or not end_lng:
         return jsonify({"error": "Please provide both start and end locations."}), 400
 
     # Find nearest station to start location
-    start_loc = name_to_coordinates(start)
-    start_station = get_nearest_station(start_loc)
+    # start_loc = name_to_coordinates(start)
+    start_station = get_nearest_station((start_lat, start_lng))
 
     # Find nearest station to end location
-    end_loc = name_to_coordinates(end)
-    end_station = get_nearest_station(end_loc)
+    # end_loc = name_to_coordinates(end)
+    end_station = get_nearest_station((end_lat, end_lng))
     
     # Find shortest path using A* search
     shortest_path = a_star_search(start_station, end_station)
+    # print(shortest_path)
 
     return shortest_path  # Return JSON response
 

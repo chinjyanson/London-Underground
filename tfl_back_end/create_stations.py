@@ -1,5 +1,5 @@
 import requests
-import json
+import json, jsonify
 from cache_client import station_cache
 
 def get_stations_by_line(stations, line_id):
@@ -89,7 +89,7 @@ def create_stations():
         station_cache.put('station_cache', json.dumps(stations))
     except:
         pass
-    return stations
+    return json.dumps(stations)
 
 global_stations = create_stations()
 
