@@ -12,6 +12,7 @@ const TrainMap = ({ pathData, setPathData }) => {
   const [startingCoordinates, setStartingCoordinates] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
   const [showAllStations, setShowAllStations] = useState(false);
+  const [showZones, setShowZones] = useState(false);
 
   const handleFindPath = async () => {
     if (!startingLocation || !destination) {
@@ -44,7 +45,7 @@ const TrainMap = ({ pathData, setPathData }) => {
   };
 
   const handleShowZones = async () => {
-  
+    setShowZones(!showZones);
   };
 
   const pathStations = pathData ? JSON.stringify(pathData.path) : '[]'; // Extract path
@@ -172,7 +173,7 @@ const TrainMap = ({ pathData, setPathData }) => {
               });
               
               // Add popup to each station marker
-              marker.bindPopup(\`Station: \${name} <br> Line: \${stationInfo.line.join(', ')}\`);
+              marker.bindPopup(\`Station: \${name} <br> Line: \${stationInfo.line.join(', ')}\  \${stationInfo.coordinates}\`);
               stationsLayerGroup.addLayer(marker);
               
               // Draw polylines between neighbours
@@ -224,6 +225,78 @@ const TrainMap = ({ pathData, setPathData }) => {
             opacity: 0.8
           }).addTo(map);
         }
+      
+      if (${showZones}) {
+        let zone1polygon, zone2polygon, zone3polygon;
+
+        const Zone1 = [
+          [51.5090, -0.1979],  // Notting Hill Gate
+          [51.5181, -0.1783],  // Paddington
+          [51.5250, -0.1632],
+          [51.5291, -0.1332],  // Euston
+          [51.5308, -0.1238],  // King's Cross St Pancras
+          [51.5252, -0.0875],  // Old Street
+          [51.5150, -0.0723],  // Aldgate East
+          [51.5102, -0.0766],  // Tower Hill
+          [51.4941, -0.0997],  // Elephant & Castle
+          [51.4854, -0.1226],  // Vauxhall
+          [51.4914, -0.1933],  // Earl's Court
+        ];
+
+        const Zone2 = [
+          [51.5235, -0.2597], // North Acton
+          [51.4951, -0.2546], // Turnham Green
+          [51.4592, -0.2110], // East Putney
+          [51.4526, -0.1476], // Clapham South
+          [51.5004, 0.0043], // North Greenwich
+          [51.5830, -0.0726], // Seven Sisters
+          [51.5707, -0.0961], // Manor House 
+          [51.5655, -0.1348], // Archway
+          [51.5560, -0.1774], // Hampstead
+          [51.5491, -0.2215], // Willesden Green
+          [51.5323, -0.2443], // Willesden Junction
+        ];
+
+        const Zone3 = [
+          [51.5523, -0.2968], // Wembley Central
+          [51.5365, -0.2968], // Perivale
+          [51.4990, -0.3150], // Northfields
+          [51.4770, -0.2852], // Kew Gardens
+          [51.4153, -0.1920], // South Wimbledon
+          [51.5020, 0.0627], // Random location
+          [51.5389, 0.0512], // East Ham
+          [51.5683, 0.0082], //Leytonstone
+          [51.6070, -0.1242], // Bounds Green
+          [51.6009, -0.1925], //Fincheley Central
+          [51.5833, -0.2264], // Hendon Central
+          
+        ];
+        zone1polygon = L.polygon(Zone1, {
+          color: 'red',
+          fillColor: 'red',
+          fillOpacity: 0.05,
+          opacity: 0.3
+          }).addTo(map);
+        zone1polygon.bindPopup('Zone 1');
+        zone2polygon = L.polygon(Zone2, {
+          color: 'blue',
+          fillColor: 'blue',
+          fillOpacity: 0.05,
+          opacity: 0.3
+        }).addTo(map);
+        zone2polygon.bindPopup('Zone 2');
+        zone3polygon = L.polygon(Zone3, {
+          color: 'green',
+          fillColor: 'green',
+          fillOpacity: 0.05,
+          opacity: 0.3
+        }).addTo(map);
+        zone3polygon.bindPopup('Zone 3');
+
+        zone2polygon.bringToFront();
+        zone1polygon.bringToFront();
+      }
+
       });
     </script>
   </body>
@@ -273,7 +346,7 @@ const TrainMap = ({ pathData, setPathData }) => {
         />
         <Button title="Find Path" onPress={handleFindPath} />
         <View style={styles.showZonesContainer}>
-          <Button title="Show Zones" onPress={handleShowZones}/>
+          <Button title={showZones ? "Hide Zones" : "Show Zones"} onPress={handleShowZones}/>
         </View>
         <View style={styles.showAllStationsContainer}>
         <Button title={showAllStations ? "Hide All Stations" : "Show All Stations"} onPress={handleAllPath} />
