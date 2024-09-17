@@ -82,10 +82,6 @@ const SlidingModal = ({ pathData }) => {
       }}
       {...panResponder.panHandlers}
     >
-      {/* Modal Header */}
-      <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Journey Details</Text>
-      </View>
 
       {/* Journey Log */}
       <JourneyLog timeTaken={timeTaken} journeyPath={JourneyPath} />
@@ -107,6 +103,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     padding: 20,
+    zindex: 1000,
+    elevation: 1000,
   },
   modalHeader: {
     alignItems: 'center',

@@ -17,16 +17,16 @@ const JourneyLog = ({ timeTaken, journeyPath }) => {
     <View style={styles.container}>
       <Text style={styles.header}>Journey Summary</Text>
 
-      {/* Time Taken */}
-      <View style={styles.infoRow}>
-        <Text style={styles.label}>Time Taken: </Text>
-        <Text style={styles.value}>{timeTaken} minutes</Text>
+      {/* Time Taken Section */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoLabel}>Time Taken</Text>
+        <Text style={styles.infoValue}>{timeTaken} minutes</Text>
       </View>
 
-      {/* ETA */}
-      <View style={styles.infoRow}>
-        <Text style={styles.label}>ETA: </Text>
-        <Text style={styles.value}>{calculateETA(timeTaken)}</Text>
+      {/* ETA Section */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoLabel}>ETA</Text>
+        <Text style={styles.infoValue}>{calculateETA(timeTaken)}</Text>
       </View>
 
       {/* Journey Path */}
@@ -51,12 +51,34 @@ const JourneyLog = ({ timeTaken, journeyPath }) => {
 };
 
 const styles = StyleSheet.create({
+  infoContainer: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'center',
+    color: '#666',
+  },
+  infoValue: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
   container: {
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
     marginBottom: 20,
     height: '80%', // Ensure the modal or container has enough space
+    zindex: 1001,
   },
   header: {
     fontSize: 20,

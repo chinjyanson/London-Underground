@@ -17,7 +17,7 @@ const ParentComponent = () => {
         {pathData && pathData.path ? (  // Ensure pathData is valid before rendering
           <SlidingUpModal pathData={pathData} />
         ) : (
-          <Text>Enter starting location and destination to get the journey details.</Text>
+          <View></View> // return empty view if nothing selected yet
         )}
 
       </SafeAreaView>  

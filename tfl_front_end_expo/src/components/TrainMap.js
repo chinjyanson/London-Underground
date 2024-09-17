@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Button, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { find_optimal_path } from '../api/api';
+import { find_optimal_path, get_all_stations } from '../api/api';
 import { GOOGLE_PLACES_API_KEY } from '@env';
 
 const TrainMap = ({ pathData, setPathData }) => {
   const [startingLocation, setStartingLocation] = useState('');
   const [destination, setDestination] = useState('');
+  const [allPath, setAllPath] = useState(null);
   const [startingCoordinates, setStartingCoordinates] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
-  console.log(startingCoordinates);
+  const [showAllStations, setShowAllStations] = useState(false);
 
   const handleFindPath = async () => {
     if (!startingLocation || !destination) {
@@ -28,7 +29,44 @@ const TrainMap = ({ pathData, setPathData }) => {
     }
   };
 
+  const handleAllPath = async () => {
+    if (!allPath) {
+      try {
+        const data = await get_all_stations(); // Call the API to get all stations
+        console.log('API response:', data);
+        setAllPath(data); // Save all stations data to state
+      } catch (error) {
+        Alert.alert('Error', 'Failed to get all stations.');
+        console.error('API call failed:', error);
+      }
+    }
+    setShowAllStations(!showAllStations); // Toggle the visibility state
+  };
+
+  const handleShowZones = async () => {
+  
+  };
+
   const pathStations = pathData ? JSON.stringify(pathData.path) : '[]'; // Extract path
+  const allStations = allPath ? JSON.stringify(allPath) : '[]';
+  // const pathStations = allPath ? JSON.stringify(allPath) : '[]';
+
+  // const allRouteCoordinates = [];
+  // const stations = JSON.parse(allPath);
+  // for (const stationName in stations){
+  //   if (stations.hasOwnProperty(stationName)) {
+  //     const stationInfo = stations[stationName];
+  //     allRouteCoordinates.push({
+  //       "coordinates": stationInfo.coordinates,
+  //       "line": stationInfo.line,
+  //       "station": stationName,
+  //       "color": stationInfo.color
+  //     }); 
+  //   }
+  // }
+  // allRouteCoordinates = allPath ? allRouteCoordinates : '[]';
+
+  // console.log('All coordinates:', allRouteCoordinates);
 
   // Dynamically generate the HTML content for the WebView
   const html = `
@@ -55,7 +93,9 @@ const TrainMap = ({ pathData, setPathData }) => {
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-      const map = L.map('map').setView([51.505, -0.09], 13); // Default map view
+      const map = L.map('map', {
+          zoomControl: false  // Disable the zoom control
+      }).setView([51.505, -0.09], 13); // Default map view
   
       // Add tile layer (OpenStreetMap)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -71,7 +111,7 @@ const TrainMap = ({ pathData, setPathData }) => {
           popupAnchor: [0, -10]    // Offset the popup so it appears above the icon
         });
       }
-  
+      
       // Add markers for the starting coordinates
       ${startingCoordinates ? `
         map.setView([${startingCoordinates.lat}, ${startingCoordinates.lng}], 13);
@@ -110,10 +150,58 @@ const TrainMap = ({ pathData, setPathData }) => {
           }).addTo(map);
         }
       ` : ''}
-  
-      // Add all station markers and connect them with individual polylines
-      const stations = ${pathStations};
-      stations.forEach((station, index) => {
+
+      let stationsLayerGroup;
+
+      function toggleStations(showStations) {
+        if (stationsLayerGroup) {
+          map.removeLayer(stationsLayerGroup);
+        }
+        
+        if (showStations) {
+          stationsLayerGroup = L.layerGroup();  // Create a layer group to hold stations and polylines
+          const stations = ${allStations};
+          for (const stationName in stations) {
+            if (stations.hasOwnProperty(stationName)) {
+              const stationInfo = stations[stationName];
+              const { coordinates, color, name } = stationInfo;
+      
+              // Add marker with the static pixel icon and line color
+              const marker = L.marker(coordinates, {
+                icon: createStationIcon()
+              });
+              
+              // Add popup to each station marker
+              marker.bindPopup(\`Station: \${name} <br> Line: \${stationInfo.line.join(', ')}\`);
+              stationsLayerGroup.addLayer(marker);
+              
+              // Draw polylines between neighbours
+              for (const neighbourName in stationInfo.neighbours) {
+                if (stationInfo.neighbours.hasOwnProperty(neighbourName)) {
+                  const neighbourInfo = stationInfo.neighbours[neighbourName];
+                  const neighbourCoordinates = neighbourInfo.coordinates;
+      
+                  const polyline = L.polyline([coordinates, neighbourCoordinates], {
+                    color: stationInfo.color || 'black',  // Use the station color
+                    weight: 4,
+                    opacity: 0.8
+                  });
+                  stationsLayerGroup.addLayer(polyline);
+                }
+              }
+            }
+          }
+          stationsLayerGroup.addTo(map);  // Add all markers and polylines at once
+        }
+      }
+
+      // Initial call to toggle stations based on showAllStations state
+      toggleStations(${showAllStations});
+
+
+      // Add individual station markers and polylines from pathStations
+      const pathStations = ${pathStations};
+      pathStations.forEach((station, index) => {
         const { coordinates, station: stationName, line, color } = station;
         
         // Add marker with the static pixel icon
@@ -126,7 +214,7 @@ const TrainMap = ({ pathData, setPathData }) => {
   
         // Draw individual polylines for each segment between two consecutive stations
         if (index > 0) {
-          const prevStation = stations[index - 1];
+          const prevStation = pathStations[index - 1];
           const prevCoordinates = prevStation.coordinates;
           const segmentColor = station.color || 'black';  // Use the station color or default to black
           
@@ -140,7 +228,8 @@ const TrainMap = ({ pathData, setPathData }) => {
     </script>
   </body>
   </html>
-  `;
+`;
+
   
 
   return (
@@ -183,15 +272,36 @@ const TrainMap = ({ pathData, setPathData }) => {
           }}
         />
         <Button title="Find Path" onPress={handleFindPath} />
+        <View style={styles.showZonesContainer}>
+          <Button title="Show Zones" onPress={handleShowZones}/>
+        </View>
+        <View style={styles.showAllStationsContainer}>
+        <Button title={showAllStations ? "Hide All Stations" : "Show All Stations"} onPress={handleAllPath} />
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  showZonesContainer: {
+    position: 'absolute',
+    top: 160,
+    right: 0,
+    width: 155,
+    zindex: 10,
+  },
+  showAllStationsContainer: {
+    position: 'absolute',
+    top: 200,
+    right: 0,
+    width: 155,
+    zindex: 10,
+  },
   container: {
     flex: 1,
     position: 'relative',
+    zindex: 0,
   },
   webViewContainer: {
     flex: 1,

@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from algo import *
-from utils import name_to_coordinates, get_nearest_station
-from create_stations import create_stations
+from utils import get_nearest_station
+from create_stations import create_stations, global_stations
 from cache_client import station_cache
 import json
 from flask_cors import CORS
@@ -44,6 +44,17 @@ def find_optimal_path():
     # print(shortest_path)
 
     return shortest_path  # Return JSON response
+
+
+@app.route('/get_all_stations', methods=['GET'])
+def get_all_stations():
+    stations = json.loads(global_stations)
+    # TODO: Add the color field inside here
+    for station_name, station_info in stations.items():
+        print(station_info)
+        station_info["color"] = line_colors.get(station_info["line"][0], "black")
+
+    return jsonify(stations)
 
 if __name__ == '__main__':
     # run() method of Flask class runs the application
