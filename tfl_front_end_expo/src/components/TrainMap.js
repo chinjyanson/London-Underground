@@ -86,6 +86,7 @@ const TrainMap = ({ pathData, setPathData }) => {
           // Add tile layer (OpenStreetMap)
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
+            minZoom: 11
           }).addTo(map);
       
           // Function to create a static pixel icon for stations
