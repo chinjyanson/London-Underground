@@ -10,8 +10,8 @@
   <img src="img/img6.jpg" alt="Image 5" width="19%" />
 </p>
 
-
-
+I have also created a video showing how the app feels with user interactions - here it is:
+[Watch the demo video](img/runthrough.mp4)
 
 ## How to run
 
@@ -19,7 +19,15 @@ To run the backend, just run the commmand `.bat`, it should automatically start 
 
 To run the front end, just run the command `npm start` and pick the Andriod option (At the current moment, since I dont have a Mac/iOS device, it makes iOS development really difficult)
 
+### .env file 
 
+Create a .env file in the `tfl_front_end_expo` folder and make sure it includes 
+```
+API_URL=XXXXXX
+GOOGLE_PLACES_API_KEY=XXXXXX
+```
+where API_URL is the `localhost` IP and Google Places API Key is obtained from Google Web Services
+> Note: Do not just put localhost for the API_URL it will not work put the IP address - e.g: http://127.0.0.1:5000
 
 ## Requirements
 - In our program we use cache. Make sure to download _*Apache Ignite* (Binary Version)_ from this link: https://ignite.apache.org/download.cgi. Then navigate to the directory in cmd, then run `bin\ignite.bat`
